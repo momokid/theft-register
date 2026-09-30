@@ -1,0 +1,23 @@
+---
+# cPanel Git Version Control deploy script.
+#
+# Before the first deploy, fill in the three placeholders below:
+#   <CPANEL_USERNAME> — your cPanel account username
+#   <APP_ROOT>         — the app's path relative to your home dir (must match
+#                         both the Node.js App's "Application root" AND the
+#                         Git repository's "Repository Path" in cPanel — they
+#                         need to point at the same directory, so this file's
+#                         tasks run directly against the live app, no copy step)
+#   <NODE_VERSION>      — the Node version you picked in "Setup Node.js App" (e.g. 20.11.1)
+#
+# cPanel runs these commands in order via /bin/bash -c, stopping on the first failure.
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/<CPANEL_USERNAME>/<APP_ROOT>/
+    - source /home/<CPANEL_USERNAME>/nodevenv/<APP_ROOT>/<NODE_VERSION>/bin/activate
+    - cd $DEPLOYPATH && npm install
+    - cd $DEPLOYPATH && npm run build
+    - cd $DEPLOYPATH && npm run migrate
+    - deactivate
+    - mkdir -p $DEPLOYPATH/tmp
+    - touch $DEPLOYPATH/tmp/restart.txt

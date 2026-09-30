@@ -1,0 +1,1 @@
+ALTER TABLE thefts ADD COLUMN price_override TINYINT(1) NOT NULL DEFAULT 0 AFTER unit_price;

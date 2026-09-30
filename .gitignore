@@ -1,0 +1,8 @@
+node_modules/
+.env
+.env.test
+client/dist/
+*.log
+data.sql
+Theft_Register_HTG_ATC.xlsx
+.claude/

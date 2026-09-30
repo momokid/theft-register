@@ -1,0 +1,663 @@
+:root {
+  --bg: #f7f7f8;
+  --surface: #ffffff;
+  --text: #1a1a1a;
+  --text-muted: #6b7280;
+  --border: #e2e2e5;
+  --accent: #2563eb;
+  --accent-text: #ffffff;
+  --danger: #dc2626;
+  --danger-bg: #fee2e2;
+  --flagged-bg: #fff7e6;
+  --chart-fuel: #2a78d6;
+  --chart-cable: #eb6834;
+  --chart-equipment: #1baf7a;
+}
+
+:root[data-theme='dark'] {
+  --bg: #14161a;
+  --surface: #1e2126;
+  --text: #f2f2f2;
+  --text-muted: #9aa0a6;
+  --border: #2c2f36;
+  --accent: #3b82f6;
+  --accent-text: #ffffff;
+  --danger: #f87171;
+  --danger-bg: #3a1f1f;
+  --flagged-bg: #3a2f1a;
+  --chart-fuel: #3987e5;
+  --chart-cable: #d95926;
+  --chart-equipment: #199e70;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.loading-screen,
+.loading {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.login-form {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 2rem;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.login-form h1 {
+  font-size: 1.2rem;
+  margin: 0;
+}
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+.login-form input {
+  padding: 0.5rem;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+}
+.password-field {
+  display: flex;
+  gap: 0.4rem;
+}
+.password-field input {
+  flex: 1;
+  min-width: 0;
+}
+.password-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.6rem;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.password-toggle:hover {
+  color: var(--text);
+}
+.login-form button:not(.password-toggle) {
+  padding: 0.6rem;
+  border: none;
+  border-radius: 4px;
+  background: var(--accent);
+  color: var(--accent-text);
+  cursor: pointer;
+}
+.login-form button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.error-banner {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 2px solid var(--danger);
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.app-header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+}
+.app-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.app-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+.app-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  padding: 0.4rem;
+  cursor: pointer;
+  color: var(--text);
+}
+.icon-button:hover {
+  color: var(--accent);
+}
+.user-name {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0 1rem;
+  overflow-x: auto;
+}
+.tab {
+  background: transparent;
+  border: none;
+  border-bottom: 4px solid transparent;
+  padding: 0.6rem 0.9rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+main {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+main.main-wide {
+  max-width: none;
+}
+.placeholder {
+  color: var(--text-muted);
+  padding: 2rem;
+  text-align: center;
+}
+
+.dashboard,
+.datasheet,
+.import-tab,
+.accounts-tab,
+.audit-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.import-upload {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.import-upload button {
+  padding: 0.4rem 0.8rem;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.import-upload button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.import-counts {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.import-status-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+.import-status-filter select {
+  padding: 0.3rem;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+}
+.import-result {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+.import-note {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.apply-price-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+.apply-price-bar select,
+.apply-price-bar input {
+  padding: 0.4rem;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+}
+.apply-price-bar input[type='number'] {
+  width: 120px;
+}
+.apply-price-bar button {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 4px;
+  background: var(--accent);
+  color: var(--accent-text);
+  cursor: pointer;
+}
+.apply-price-bar button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.apply-result {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+.filters select,
+.filters input {
+  padding: 0.4rem;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+}
+.filters .checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+.card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem;
+}
+.card-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.card-value {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.chart-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+.chart-card h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+}
+.thefts-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+.thefts-table th,
+.thefts-table td {
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--border);
+  text-align: left;
+}
+.thefts-table tr.flagged {
+  background: var(--flagged-bg);
+}
+.thefts-table tfoot td {
+  font-weight: 600;
+  border-top: 4px solid var(--border);
+}
+.thefts-table button {
+  border: 2px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 4px;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+}
+
+.editable-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+.editable-cell input {
+  width: 90px;
+  padding: 0.3rem;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+}
+.editable-cell .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
+  white-space: nowrap;
+}
+.cell-error {
+  color: var(--danger);
+  font-size: 0.75rem;
+  flex-basis: 100%;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem;
+  background: var(--surface);
+}
+.pagination button {
+  padding: 0.4rem 0.8rem;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 10;
+}
+.drawer {
+  background: var(--surface);
+  width: min(720px, 100%);
+  height: 100%;
+  overflow-y: auto;
+  padding: 1.5rem;
+  position: relative;
+  border-left: 2px solid var(--border);
+}
+.drawer-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text);
+}
+.drawer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.drawer-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+.field {
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  padding: 0.5rem 0.6rem;
+}
+.field-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.field-value {
+  font-size: 0.95rem;
+}
+.raw-post {
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  padding: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  padding: 1rem;
+}
+.modal {
+  background: var(--surface);
+  width: min(420px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.modal-header h3 {
+  margin: 0;
+}
+
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: 360px;
+}
+
+.row-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.kv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.8rem;
+  white-space: normal;
+}
+
+.datasheet-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.datasheet-actions button,
+.button-link {
+  padding: 0.4rem 0.8rem;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.print-report {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  color: var(--text);
+  z-index: 20;
+  overflow-y: auto;
+  padding: 2rem;
+}
+.print-report-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+.print-report-toolbar button {
+  padding: 0.4rem 0.8rem;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.print-report h1 {
+  font-size: 1.3rem;
+  margin: 0 0 0.5rem;
+}
+.print-meta {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.print-filter {
+  margin-right: 0.75rem;
+}
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+}
+.print-table th,
+.print-table td {
+  border: 2px solid var(--border);
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+}
+.print-table tr.flagged {
+  background: var(--flagged-bg);
+}
+
+@media print {
+  .app-header,
+  .no-print {
+    display: none !important;
+  }
+  main {
+    padding: 0;
+    max-width: none;
+  }
+  .print-report {
+    position: static;
+    background: white;
+    color: black;
+    padding: 0;
+  }
+  .print-table thead {
+    display: table-header-group;
+  }
+  .print-table tr {
+    break-inside: avoid;
+  }
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+}
+
+@media (max-width: 700px) {
+  main {
+    padding: 0.5rem;
+  }
+  .drawer {
+    width: 100%;
+  }
+}
