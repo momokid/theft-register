@@ -82,6 +82,9 @@ CREATE TABLE audit_log (
 
 -- 004_quantity_override.sql (2026-09-30, mirrors price_override)
 ALTER TABLE thefts ADD COLUMN quantity_override TINYINT(1) NOT NULL DEFAULT 0 AFTER quantity_lost;
+
+-- 005_quantity_ned.sql (2026-10-01)
+ALTER TABLE thefts ADD COLUMN quantity_ned DECIMAL(10,2) NULL AFTER quantity_override;
 ```
 The README must recommend granting the app's DB user only `INSERT, SELECT` on `audit_log`.
 
@@ -96,6 +99,7 @@ The README must recommend granting the app's DB user only `INSERT, SELECT` on `a
 - Only `unit_price`, `price_override`, `quantity_lost`, and `quantity_override` are ever updated on `thefts`.
 - **Price validation:** a number, ≥ 0, ≤ 9,999,999.99, at most 2 decimals.
 - **Quantity correction** (2026-09-30): `PATCH /api/thefts/:id/quantity` with `{quantity_lost:number}` → `quantity_lost=?, quantity_override=1`. Audit as `quantity_override`, with old and new values. No bulk apply, and no "clear" — unlike price, there's no meaningful null/unset state to revert to, so the flag is a permanent audit marker. Validation: a number, ≥ 0, ≤ 99,999,999.99 (fits `DECIMAL(10,2)`), at most 2 decimals.
+- **`quantity_ned`** (2026-10-01): a second, independent quantity-lost figure sourced from NED (a different data source than the original extraction), stored alongside `quantity_lost` for comparison — not a replacement or correction of it. Same shape as `quantity_lost` (`DECIMAL(10,2) NULL`). Not yet read or written by any route; `subtotal`/pricing/dashboard totals still key off `quantity_lost` only, pending a decision on how the two columns should be compared/surfaced in the UI.
 
 ## §6 Filters (shared by list, summary, export, print)
 `project` (HTG|ATC), `site_id` (string), `from`/`to` (YYYY-MM-DD, on post_date, inclusive), `item_type` (must exist in the DB), `flagged` (1 = `flags IS NOT NULL AND flags <> ''`).

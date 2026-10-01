@@ -70,6 +70,7 @@ RH Security staff only. There are two kinds of account:
 7. Accounts are never deleted, only deactivated. At least one active admin must always exist.
 8. The audit log is append-only and never contains passwords.
 9. Theme toggle (light/dark). The print report and Excel export use the same filter as the dashboard.
+10. **`quantity_ned`** (2026-10-01): a second quantity-lost figure, sourced from NED — a different source than the original extraction — stored alongside `quantity_lost` for comparison, not as a replacement. Schema only so far; how the two figures get compared/surfaced in the UI is still to be decided. See REFERENCE.md §4/§5.
 
 ## Out of scope
 Editing extracted data, deleting thefts, reading photos, WhatsApp integration, email notifications, and multi-currency (everything is GHS).
