@@ -19,6 +19,12 @@ npm run dev                                  # server + Vite dev server with /ap
 
 `npm run migrate` only tracks and applies files under `migrations/` — it doesn't create the base tables, so `schema.sql` must be loaded once by hand first, as shown above.
 
+## Testing
+
+`npm test` runs the full suite locally, including `thefts`/`prices`/`quantity`/`export` tests that assert against the real historical dataset (172 rows). That data isn't checked into git (it's real theft/loss records), so it has to be imported once by hand — either via the app's own Import tab, or by loading a local data dump directly into `theft_register_test`.
+
+GitHub Actions CI (`.github/workflows/ci.yml`) runs on every push/PR against a disposable MariaDB service, but only the test files that seed their own rows (`auth`, `accounts`, `audit`, `import`) — it has no access to the real dataset, so the data-dependent tests stay a local/manual check before deploying.
+
 ## Deploying to cPanel
 
 1. **Build locally.**
