@@ -45,6 +45,19 @@ export function buildTheftFilter(query = {}) {
   return { where: where.length ? `WHERE ${where.join(' AND ')}` : '', params };
 }
 
+// Whitelist map (CLAUDE.md security rule 1) — only these two sort values are ever
+// interpolated into an ORDER BY clause.
+const SORT_OPTIONS = {
+  post_date_asc: 'post_date ASC, id ASC',
+  post_date_desc: 'post_date DESC, id DESC',
+};
+
+export function buildOrderBy(sort) {
+  if (sort === undefined) return SORT_OPTIONS.post_date_asc;
+  if (!(sort in SORT_OPTIONS)) throw new ValidationError('Invalid sort');
+  return SORT_OPTIONS[sort];
+}
+
 export const AUDIT_FILTER_KEYS = ['user_id', 'action', 'from', 'to'];
 
 // Shared by the audit log list so its WHERE logic stays in one place.

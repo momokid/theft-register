@@ -11,6 +11,8 @@ export default function Datasheet({ user }) {
     meta,
     filters,
     onFiltersChange,
+    sort,
+    toggleSort,
     data,
     summary,
     loading,
@@ -30,7 +32,7 @@ export default function Datasheet({ user }) {
   if (!meta) return <div className="loading">Loading…</div>;
 
   if (showPrint) {
-    return <PrintReport filters={filters} summary={summary} user={user} onClose={() => setShowPrint(false)} />;
+    return <PrintReport filters={filters} sort={sort} summary={summary} user={user} onClose={() => setShowPrint(false)} />;
   }
 
   return (
@@ -38,7 +40,7 @@ export default function Datasheet({ user }) {
       <Filters meta={meta} value={filters} onChange={onFiltersChange} />
       <ApplyPriceBar meta={meta} filters={filters} refetch={refetch} />
       <div className="datasheet-actions">
-        <a className="button-link" href={`/api/export.xlsx?${toQuery(filters)}`}>
+        <a className="button-link" href={`/api/export.xlsx?${toQuery(filters, { sort })}`}>
           Export Excel
         </a>
         <button type="button" onClick={() => setShowPrint(true)}>
@@ -57,6 +59,8 @@ export default function Datasheet({ user }) {
             onSaveQuantity={onSaveQuantity}
             onSaveQuantityNed={onSaveQuantityNed}
             isAdmin={user.is_admin}
+            sort={sort}
+            onToggleSort={toggleSort}
           />
           <div className="pagination">
             <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>

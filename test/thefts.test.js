@@ -67,6 +67,18 @@ test('GET /api/thefts rejects an unknown filter key', async () => {
   assert.equal(res.status, 400);
 });
 
+test('GET /api/thefts defaults to post_date ASC, and sort=post_date_desc reverses it', async () => {
+  const asc = await fetch(`${base}/api/thefts?all=1`, { headers: { Cookie: cookie } }).then((r) => r.json());
+  const desc = await fetch(`${base}/api/thefts?all=1&sort=post_date_desc`, { headers: { Cookie: cookie } }).then((r) => r.json());
+  assert.ok(asc.rows[0].post_date <= asc.rows[asc.rows.length - 1].post_date);
+  assert.equal(desc.rows[0].id, asc.rows[asc.rows.length - 1].id);
+});
+
+test('GET /api/thefts rejects an invalid sort value', async () => {
+  const res = await fetch(`${base}/api/thefts?sort=bogus`, { headers: { Cookie: cookie } });
+  assert.equal(res.status, 400);
+});
+
 test('GET /api/thefts rejects all combined with page', async () => {
   const res = await fetch(`${base}/api/thefts?all=1&page=2`, { headers: { Cookie: cookie } });
   assert.equal(res.status, 400);

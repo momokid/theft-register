@@ -16,15 +16,15 @@ const FILTER_LABELS = {
 
 // All filtered rows (no raw_post, no pagination) for print/PDF — separate from the
 // Datasheet's paginated table since a print report always needs the full set.
-export default function PrintReport({ filters, summary, user, onClose }) {
+export default function PrintReport({ filters, sort, summary, user, onClose }) {
   const [rows, setRows] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    apiFetch(`/thefts?${toQuery(filters, { all: 1 })}`)
+    apiFetch(`/thefts?${toQuery(filters, { all: 1, sort })}`)
       .then((res) => setRows(res.rows))
       .catch((e) => setError(e.message));
-  }, [filters]);
+  }, [filters, sort]);
 
   const generatedAt = new Date().toLocaleString('en-GB');
 

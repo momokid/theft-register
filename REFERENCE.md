@@ -106,7 +106,7 @@ The README must recommend granting the app's DB user only `INSERT, SELECT` on `a
 
 ## §6 Filters (shared by list, summary, export, print)
 `project` (HTG|ATC), `site_id` (string), `from`/`to` (YYYY-MM-DD, on post_date, inclusive), `item_type` (must exist in the DB), `flagged` (1 = `flags IS NOT NULL AND flags <> ''`).
-- Sort is fixed: `post_date ASC, id ASC` (oldest first; 2026-10-01, was DESC).
+- Sort: `post_date ASC, id ASC` (oldest first) by default; `?sort=post_date_desc` reverses it. `sort` goes through a whitelist map (`post_date_asc`/`post_date_desc` only), same as every other filter/sort field. Shared by the list and export endpoints; the print report reflects whatever sort is active in the datasheet. (2026-10-01: default flipped from DESC to ASC, then made toggleable via the Date column header.)
 - Unknown query keys → 400.
 
 ## §7 API

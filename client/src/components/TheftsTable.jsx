@@ -1,13 +1,25 @@
 import { formatMoney, formatDate } from '../format.js';
 import EditableNumberCell from './EditableNumberCell.jsx';
 
-export default function TheftsTable({ rows, grandTotal, onView, onSaveQuantity, onSaveQuantityNed, onSavePrice, isAdmin }) {
+export default function TheftsTable({
+  rows,
+  grandTotal,
+  onView,
+  onSaveQuantity,
+  onSaveQuantityNed,
+  onSavePrice,
+  isAdmin,
+  sort,
+  onToggleSort,
+}) {
   return (
     <div className="table-wrap">
       <table className="thefts-table">
         <thead>
           <tr>
-            <th>Date</th>
+            <th className="sortable" onClick={onToggleSort}>
+              Date {sort === 'post_date_asc' ? '▲' : '▼'}
+            </th>
             <th>Project</th>
             <th>Site</th>
             <th>Item</th>

@@ -23,6 +23,7 @@ const TheftsDataContext = createContext(null);
 export function TheftsDataProvider({ children }) {
   const [meta, setMeta] = useState(null);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [sort, setSort] = useState('post_date_asc');
   const [page, setPage] = useState(1);
   const [data, setData] = useState(null);
   const [summary, setSummary] = useState(null);
@@ -41,6 +42,11 @@ export function TheftsDataProvider({ children }) {
     setPage(1);
   }, []);
 
+  const toggleSort = useCallback(() => {
+    setSort((s) => (s === 'post_date_asc' ? 'post_date_desc' : 'post_date_asc'));
+    setPage(1);
+  }, []);
+
   useEffect(() => {
     if (!meta) return;
     const controller = new AbortController();
@@ -48,7 +54,7 @@ export function TheftsDataProvider({ children }) {
     setError(null);
 
     Promise.all([
-      apiFetch(`/thefts?${toQuery(filters, { page, pageSize: PAGE_SIZE })}`, { signal: controller.signal }),
+      apiFetch(`/thefts?${toQuery(filters, { page, pageSize: PAGE_SIZE, sort })}`, { signal: controller.signal }),
       apiFetch(`/summary?${toQuery(filters)}`, { signal: controller.signal }),
     ])
       .then(([theftsRes, summaryRes]) => {
@@ -61,18 +67,18 @@ export function TheftsDataProvider({ children }) {
       .finally(() => setLoading(false));
 
     return () => controller.abort();
-  }, [meta, filters, page]);
+  }, [meta, filters, page, sort]);
 
   // For actions that mutate rows outside the per-cell save path (bulk apply-price).
   const refetch = useCallback(() => {
     Promise.all([
-      apiFetch(`/thefts?${toQuery(filters, { page, pageSize: PAGE_SIZE })}`),
+      apiFetch(`/thefts?${toQuery(filters, { page, pageSize: PAGE_SIZE, sort })}`),
       apiFetch(`/summary?${toQuery(filters)}`),
     ]).then(([theftsRes, summaryRes]) => {
       setData(theftsRes);
       setSummary(summaryRes);
     });
-  }, [filters, page]);
+  }, [filters, page, sort]);
 
   async function handleCellSave(id, body) {
     let path;
@@ -92,6 +98,8 @@ export function TheftsDataProvider({ children }) {
     meta,
     filters,
     onFiltersChange,
+    sort,
+    toggleSort,
     page,
     setPage,
     totalPages,

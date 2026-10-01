@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { pool } from '../db.js';
 import { requireAuth } from '../auth.js';
-import { buildTheftFilter, FILTER_KEYS } from '../filters.js';
+import { buildTheftFilter, buildOrderBy, FILTER_KEYS } from '../filters.js';
 import { requireOnlyKeys, parsePagination, ValidationError } from '../validate.js';
 
 // Subtotal is keyed off quantity_ned (not quantity_lost) per the 2026-10-01 decision —
@@ -14,12 +14,13 @@ export const router = Router();
 
 router.get('/', requireAuth, async (req, res, next) => {
   try {
-    requireOnlyKeys(req.query, [...FILTER_KEYS, 'page', 'pageSize', 'all']);
+    requireOnlyKeys(req.query, [...FILTER_KEYS, 'page', 'pageSize', 'all', 'sort']);
     const { where, params } = buildTheftFilter(req.query);
     const { limit, offset } = parsePagination(req.query);
+    const orderBy = buildOrderBy(req.query.sort);
 
     const [rows] = await pool.query(
-      `SELECT ${LIST_COLUMNS} FROM thefts ${where} ORDER BY post_date ASC, id ASC LIMIT ? OFFSET ?`,
+      `SELECT ${LIST_COLUMNS} FROM thefts ${where} ORDER BY ${orderBy} LIMIT ? OFFSET ?`,
       [...params, limit, offset]
     );
     const [[{ total }]] = await pool.query(`SELECT COUNT(*) AS total FROM thefts ${where}`, params);
