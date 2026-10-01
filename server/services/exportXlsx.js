@@ -22,6 +22,8 @@ const COLUMNS = [
   { header: 'Fuel After (L)', key: 'fuel_after_l' },
   { header: 'Quantity Lost', key: 'quantity_lost' },
   { header: 'Quantity Override', key: 'quantity_override' },
+  { header: 'Quantity (NED)', key: 'quantity_ned' },
+  { header: 'Quantity NED Override', key: 'quantity_ned_override' },
   { header: 'Unit Price (GHS)', key: 'unit_price' },
   { header: 'Price Override', key: 'price_override' },
   { header: 'Subtotal (GHS)', key: 'subtotal' },
@@ -45,10 +47,11 @@ const NUMBER_KEYS = new Set([
   'fuel_before_l',
   'fuel_after_l',
   'quantity_lost',
+  'quantity_ned',
   'unit_price',
   'subtotal',
 ]);
-const BOOL_KEYS = new Set(['quantity_override', 'price_override']);
+const BOOL_KEYS = new Set(['quantity_override', 'quantity_ned_override', 'price_override']);
 
 function formatDate(isoDate) {
   if (!isoDate) return '';

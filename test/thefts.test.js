@@ -100,13 +100,13 @@ test('GET /api/summary with no filter matches acceptance numbers', async () => {
   assert.equal(body.fuel_lost_l, 22532);
 });
 
-test('GET /api/summary grand_total matches SELECT SUM(quantity_lost*unit_price) for a filtered set', async () => {
+test('GET /api/summary grand_total matches SELECT SUM(quantity_ned*unit_price) for a filtered set', async () => {
   const res = await fetch(`${base}/api/summary?project=HTG&item_type=Fuel`, { headers: { Cookie: cookie } });
   assert.equal(res.status, 200);
   const body = await res.json();
 
   const [[{ expected }]] = await pool.query(
-    `SELECT SUM(quantity_lost * unit_price) AS expected FROM thefts WHERE project = 'HTG' AND item_type = 'Fuel'`
+    `SELECT SUM(quantity_ned * unit_price) AS expected FROM thefts WHERE project = 'HTG' AND item_type = 'Fuel'`
   );
   assert.equal(body.grand_total, expected || 0);
 });

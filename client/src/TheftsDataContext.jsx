@@ -75,7 +75,10 @@ export function TheftsDataProvider({ children }) {
   }, [filters, page]);
 
   async function handleCellSave(id, body) {
-    const path = 'unit_price' in body ? `/thefts/${id}/price` : `/thefts/${id}/quantity`;
+    let path;
+    if ('unit_price' in body) path = `/thefts/${id}/price`;
+    else if ('quantity_ned' in body) path = `/thefts/${id}/quantity_ned`;
+    else path = `/thefts/${id}/quantity`;
     const updated = await apiFetch(path, { method: 'PATCH', body: JSON.stringify(body) });
     setData((d) => ({ ...d, rows: d.rows.map((r) => (r.id === id ? { ...r, ...updated } : r)) }));
     apiFetch(`/summary?${toQuery(filters)}`)
@@ -100,6 +103,7 @@ export function TheftsDataProvider({ children }) {
     setDrawerId,
     onSavePrice: (id, unit_price) => handleCellSave(id, { unit_price }),
     onSaveQuantity: (id, quantity_lost) => handleCellSave(id, { quantity_lost }),
+    onSaveQuantityNed: (id, quantity_ned) => handleCellSave(id, { quantity_ned }),
     refetch,
   };
 

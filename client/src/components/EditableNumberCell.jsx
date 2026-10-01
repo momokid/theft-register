@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 // button that only appears once the value actually differs from what's saved,
 // Enter to save, Esc to revert the in-progress edit — the button applies the
 // change and disappears on its own since `dirty` goes false once saved.
-export default function EditableNumberCell({ value, overridden, badgeLabel, saveLabel = 'Save', onSave }) {
+export default function EditableNumberCell({ value, overridden, badgeLabel, saveLabel = 'Save', onSave, editable = true }) {
   const [draft, setDraft] = useState(value === null || value === undefined ? '' : String(value));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -12,6 +12,15 @@ export default function EditableNumberCell({ value, overridden, badgeLabel, save
   useEffect(() => {
     setDraft(value === null || value === undefined ? '' : String(value));
   }, [value]);
+
+  if (!editable) {
+    return (
+      <div className="editable-cell">
+        <span>{value === null || value === undefined ? '—' : value}</span>
+        {overridden && <span className="badge">{badgeLabel}</span>}
+      </div>
+    );
+  }
 
   const draftNum = draft === '' ? null : Number(draft);
   const dirty = draftNum !== value;

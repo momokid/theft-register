@@ -34,6 +34,7 @@ export default function SourceDrawer({ id, onClose }) {
               <Field label="Item type" value={row.item_type} />
               <Field label="Unit" value={row.unit} />
               <Field label="Quantity lost" value={row.quantity_lost} />
+              <Field label="Quantity (NED)" value={row.quantity_ned} />
               <Field label="Unit price" value={formatMoney(row.unit_price)} />
               <Field label="Subtotal" value={formatMoney(row.subtotal)} />
               <Field label="RH before / after" value={`${row.rh_before ?? '—'} / ${row.rh_after ?? '—'}`} />

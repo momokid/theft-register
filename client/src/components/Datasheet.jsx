@@ -22,6 +22,7 @@ export default function Datasheet({ user }) {
     setDrawerId,
     onSavePrice,
     onSaveQuantity,
+    onSaveQuantityNed,
     refetch,
   } = useTheftsData();
   const [showPrint, setShowPrint] = useState(false);
@@ -54,6 +55,8 @@ export default function Datasheet({ user }) {
             onView={setDrawerId}
             onSavePrice={onSavePrice}
             onSaveQuantity={onSaveQuantity}
+            onSaveQuantityNed={onSaveQuantityNed}
+            isAdmin={user.is_admin}
           />
           <div className="pagination">
             <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>

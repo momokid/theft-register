@@ -3,6 +3,7 @@ node_modules/
 .env.test
 client/dist/
 *.log
-data.sql
-/*.xlsx
+data*.sql
+*.xlsx
+*.xls
 .claude/

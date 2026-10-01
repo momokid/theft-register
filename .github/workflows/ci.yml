@@ -66,7 +66,7 @@ jobs:
       # as real business data and isn't available to CI — those are verified locally
       # against the real seeded DB instead (see README).
       - name: Run self-contained tests
-        run: node --test test/auth.test.js test/accounts.test.js test/audit.test.js test/import.test.js
+        run: node --test --test-concurrency=1 test/auth.test.js test/accounts.test.js test/audit.test.js test/import.test.js
 
       - name: Build client
         run: npm run build

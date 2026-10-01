@@ -1,7 +1,7 @@
 import { formatMoney, formatDate } from '../format.js';
 import EditableNumberCell from './EditableNumberCell.jsx';
 
-export default function TheftsTable({ rows, grandTotal, onView, onSaveQuantity, onSavePrice }) {
+export default function TheftsTable({ rows, grandTotal, onView, onSaveQuantity, onSaveQuantityNed, onSavePrice, isAdmin }) {
   return (
     <div className="table-wrap">
       <table className="thefts-table">
@@ -13,6 +13,7 @@ export default function TheftsTable({ rows, grandTotal, onView, onSaveQuantity, 
             <th>Item</th>
             <th>Type</th>
             <th>Qty</th>
+            <th>Qty (NED)</th>
             <th>Unit price</th>
             <th>Subtotal</th>
             <th>Flags</th>
@@ -34,6 +35,18 @@ export default function TheftsTable({ rows, grandTotal, onView, onSaveQuantity, 
                   badgeLabel="edited"
                   saveLabel="Save"
                   onSave={(v) => onSaveQuantity(r.id, v)}
+                  editable={isAdmin}
+                />
+                {r.unit !== '-' ? r.unit : ''}
+              </td>
+              <td>
+                <EditableNumberCell
+                  value={r.quantity_ned}
+                  overridden={!!r.quantity_ned_override}
+                  badgeLabel="edited"
+                  saveLabel="Save"
+                  onSave={(v) => onSaveQuantityNed(r.id, v)}
+                  editable={isAdmin}
                 />
                 {r.unit !== '-' ? r.unit : ''}
               </td>
@@ -56,7 +69,7 @@ export default function TheftsTable({ rows, grandTotal, onView, onSaveQuantity, 
         </tbody>
         <tfoot>
           <tr>
-            <td colSpan={7}>Grand total</td>
+            <td colSpan={8}>Grand total</td>
             <td>{formatMoney(grandTotal)}</td>
             <td colSpan={2}></td>
           </tr>

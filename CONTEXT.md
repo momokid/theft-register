@@ -70,7 +70,8 @@ RH Security staff only. There are two kinds of account:
 7. Accounts are never deleted, only deactivated. At least one active admin must always exist.
 8. The audit log is append-only and never contains passwords.
 9. Theme toggle (light/dark). The print report and Excel export use the same filter as the dashboard.
-10. **`quantity_ned`** (2026-10-01): a second quantity-lost figure, sourced from NED — a different source than the original extraction — stored alongside `quantity_lost` for comparison, not as a replacement. Schema only so far; how the two figures get compared/surfaced in the UI is still to be decided. See REFERENCE.md §4/§5.
+10. **`quantity_ned`** (2026-10-01): a second quantity-lost figure, sourced from NED — a different source than the original extraction — stored alongside `quantity_lost` for comparison, not as a replacement. Independently editable by admins (own route, own `quantity_ned_override` flag, own audit action) — editing one quantity never touches the other. **Subtotal and grand total now key off `quantity_ned`, not `quantity_lost`** (supersedes point 3's "quantity" being `quantity_lost`). Because `quantity_ned` coverage is much sparser than `quantity_lost` in the existing dataset, many rows currently show a blank subtotal and drop out of the grand total despite having a `quantity_lost` and `unit_price`. See REFERENCE.md §4/§5.
+11. **Quantity editing is admin-only** (2026-10-01, tightening point 2 — both `quantity_lost` and `quantity_ned` edits now require `requireAdmin`, not just `requireAuth`). Price editing is unaffected and remains open to any authenticated user.
 
 ## Out of scope
 Editing extracted data, deleting thefts, reading photos, WhatsApp integration, email notifications, and multi-currency (everything is GHS).

@@ -85,21 +85,24 @@ ALTER TABLE thefts ADD COLUMN quantity_override TINYINT(1) NOT NULL DEFAULT 0 AF
 
 -- 005_quantity_ned.sql (2026-10-01)
 ALTER TABLE thefts ADD COLUMN quantity_ned DECIMAL(10,2) NULL AFTER quantity_override;
+
+-- 006_quantity_ned_override.sql (2026-10-01, mirrors quantity_override)
+ALTER TABLE thefts ADD COLUMN quantity_ned_override TINYINT(1) NOT NULL DEFAULT 0 AFTER quantity_ned;
 ```
 The README must recommend granting the app's DB user only `INSERT, SELECT` on `audit_log`.
 
 ## §5 Business rules
-- **Subtotal** = `quantity_lost * unit_price`, computed in SQL. It is NULL if either value is NULL. **Never stored.**
-- **Grand total** = `SUM(subtotal)` over the full filtered set, not just the current page.
-- **Unpriced** = rows where `quantity_lost IS NOT NULL AND unit_price IS NULL`.
-- **Fuel lost** = `SUM(quantity_lost) WHERE item_type='Fuel'`.
-- **Chart group:** unit `L` → fuel, `m` → cable, else → equipment. `by_month` = subtotals grouped by `DATE_FORMAT(post_date,'%Y-%m')`.
+- **Subtotal** = `quantity_ned * unit_price` (2026-10-01, superseding `quantity_lost * unit_price` — see the `quantity_ned` entry below), computed in SQL. It is NULL if either value is NULL. **Never stored.**
+- **Grand total** = `SUM(subtotal)` over the full filtered set, not just the current page. Also keyed off `quantity_ned` as of 2026-10-01.
+- **Unpriced** = rows where `quantity_lost IS NOT NULL AND unit_price IS NULL`. Still `quantity_lost`-based — this counts rows missing a price, not a subtotal calculation.
+- **Fuel lost** = `SUM(quantity_lost) WHERE item_type='Fuel'`. Still `quantity_lost`-based, same reasoning as unpriced.
+- **Chart group:** unit `L` → fuel, `m` → cable, else → equipment. `by_month` = subtotals (quantity_ned-based) grouped by `DATE_FORMAT(post_date,'%Y-%m')`.
 - **Apply price:** `UPDATE thefts SET unit_price=? WHERE item_type=? AND post_date BETWEEN ? AND ? [AND project=?] AND price_override=0`. First SELECT the affected ids and their old prices **FOR UPDATE** inside the same transaction, then write one `price_apply` audit row.
 - **Override:** `PATCH` with a number → `unit_price=?, price_override=1`. With `null` → `unit_price=NULL, price_override=0`. Audit as `price_override` or `price_clear`, with the old and new values.
-- Only `unit_price`, `price_override`, `quantity_lost`, and `quantity_override` are ever updated on `thefts`.
+- Only `unit_price`, `price_override`, `quantity_lost`, `quantity_override`, `quantity_ned`, and `quantity_ned_override` are ever updated on `thefts`.
 - **Price validation:** a number, ≥ 0, ≤ 9,999,999.99, at most 2 decimals.
-- **Quantity correction** (2026-09-30): `PATCH /api/thefts/:id/quantity` with `{quantity_lost:number}` → `quantity_lost=?, quantity_override=1`. Audit as `quantity_override`, with old and new values. No bulk apply, and no "clear" — unlike price, there's no meaningful null/unset state to revert to, so the flag is a permanent audit marker. Validation: a number, ≥ 0, ≤ 99,999,999.99 (fits `DECIMAL(10,2)`), at most 2 decimals.
-- **`quantity_ned`** (2026-10-01): a second, independent quantity-lost figure sourced from NED (a different data source than the original extraction), stored alongside `quantity_lost` for comparison — not a replacement or correction of it. Same shape as `quantity_lost` (`DECIMAL(10,2) NULL`). Not yet read or written by any route; `subtotal`/pricing/dashboard totals still key off `quantity_lost` only, pending a decision on how the two columns should be compared/surfaced in the UI.
+- **Quantity correction** (2026-09-30, both quantities as of 2026-10-01): `PATCH /api/thefts/:id/quantity` with `{quantity_lost:number}` → `quantity_lost=?, quantity_override=1`; `PATCH /api/thefts/:id/quantity_ned` with `{quantity_ned:number}` mirrors it exactly → `quantity_ned=?, quantity_ned_override=1`. **Admin-only as of 2026-10-01** (`requireAuth, requireAdmin`) for both routes — price editing remains open to any authenticated user. Audit as `quantity_override`/`quantity_ned_override`, with old and new values. No bulk apply, and no "clear" — unlike price, there's no meaningful null/unset state to revert to, so the flag is a permanent audit marker. Validation: a number, ≥ 0, ≤ 99,999,999.99 (fits `DECIMAL(10,2)`), at most 2 decimals.
+- **`quantity_ned`** (2026-10-01): a second, independent quantity-lost figure sourced from NED (a different data source than the original extraction), stored alongside `quantity_lost` for comparison. As of 2026-10-01 it drives subtotal/grand total (see above) and is independently editable by admins via its own route and override flag — editing `quantity_lost` never touches `quantity_ned` or the subtotal, and vice versa. Because `quantity_ned` is populated far more sparsely than `quantity_lost` in the existing dataset, rows without a `quantity_ned` value show a NULL subtotal and drop out of the grand total, even if `quantity_lost` and `unit_price` are both set.
 
 ## §6 Filters (shared by list, summary, export, print)
 `project` (HTG|ATC), `site_id` (string), `from`/`to` (YYYY-MM-DD, on post_date, inclusive), `item_type` (must exist in the DB), `flagged` (1 = `flags IS NOT NULL AND flags <> ''`).
@@ -162,9 +165,9 @@ All JSON. Errors are `{error}` with status 400, 401, 403, 404, 409, 413, or 500.
   - **Chart:** stacked bars by month (fuel / cable / equipment), in GHS.
   - **Apply price bar:** item type, from/to (defaults to the filter), project, price. A confirm dialog, then "Updated X · skipped Y overrides".
   - **Buttons:** Export Excel, Print report.
-  - **Table:** Date, Project, Site, Item, Type, Qty + unit, Unit price, Subtotal, Flags, View. Flagged rows are tinted. 50 per page. Footer shows the grand total from the summary.
+  - **Table:** Date, Project, Site, Item, Type, Qty + unit, Qty (NED) + unit, Unit price, Subtotal, Flags, View. Flagged rows are tinted. 50 per page. Footer shows the grand total from the summary.
     - **Unit price cell:** an input. The **Override** button shows **only when the input differs from the saved value**. Clicking it or pressing Enter saves and the button disappears on its own (the saved value now matches the input, so it's no longer dirty). Esc reverts the in-progress edit. Overridden rows show an "override" badge. No × to clear (2026-09-30, superseding the original "badge + × to clear" spec — the badge alone was decided sufficient; to unset a price now, type over the value).
-    - **Qty cell** (2026-09-30): same input/save/Esc-revert interaction as unit price. Saved rows show an "edited" badge.
+    - **Qty cell and Qty (NED) cell** (2026-09-30, NED cell added 2026-10-01): same input/save/Esc-revert interaction as unit price, each independently audited with its own "edited" badge. **Admin-only** — non-admins see the value and badge as plain text, no input (server-enforced via `requireAdmin` on both routes, not just hidden client-side).
   - **Source drawer:** extracted fields on the left, raw_post on the right (pre-wrap, read-only).
 - **Print report:** title, filters, generated by/at, cards, chart, and **all** filtered rows (no raw_post). `@media print` A4, repeating table headers, a Print button that calls `window.print()`.
 - **Import tab:** choose file → Preview (counts, status filter, reasons) → Commit (disabled while errors exist) → result.
@@ -185,7 +188,7 @@ All JSON. Errors are `{error}` with status 400, 401, 403, 404, 409, 413, or 500.
 
 ## §13 Acceptance checks
 1. No filter: 172 rows. Fuel lost 22,532 L (HTG 21,205 + ATC 1,327).
-2. The grand total equals `SELECT SUM(quantity_lost*unit_price)` with the same WHERE, on every filter combination tested.
+2. The grand total equals `SELECT SUM(quantity_ned*unit_price)` with the same WHERE, on every filter combination tested (2026-10-01: was `quantity_lost*unit_price`).
 3. The Override button is hidden until the input changes, and hidden again after saving or pressing Esc.
 4. Apply GHS 10 to Fuel; override one fuel row to 12; apply GHS 11 to Fuel: that row stays 12, `skipped_overrides=1`, and the audit row holds the old prices.
 5. Re-importing the original workbook: preview shows 0 new and 172 duplicates; commit inserts 0.

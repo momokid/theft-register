@@ -16,7 +16,7 @@ router.get('/', requireAuth, async (req, res, next) => {
     const { where, params } = buildTheftFilter(req.query);
 
     const [rows] = await pool.query(
-      `SELECT *, (quantity_lost * unit_price) AS subtotal FROM thefts ${where}
+      `SELECT *, (quantity_ned * unit_price) AS subtotal FROM thefts ${where}
        ORDER BY post_date DESC, id DESC LIMIT ${EXPORT_CAP}`,
       params
     );
@@ -24,7 +24,7 @@ router.get('/', requireAuth, async (req, res, next) => {
     const [[stats]] = await pool.query(
       `SELECT
         SUM(CASE WHEN item_type = 'Fuel' THEN quantity_lost ELSE 0 END) AS fuel_lost_l,
-        SUM(quantity_lost * unit_price) AS grand_total
+        SUM(quantity_ned * unit_price) AS grand_total
        FROM thefts ${where}`,
       params
     );

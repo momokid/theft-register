@@ -89,6 +89,14 @@ export function validateQuantityBody(body) {
   return quantity_lost;
 }
 
+export function validateQuantityNedBody(body) {
+  requireOnlyKeys(body, ['quantity_ned']);
+  if (!body || !('quantity_ned' in body)) throw new ValidationError('quantity_ned is required');
+  const { quantity_ned } = body;
+  if (quantity_ned !== null && !isValidQuantity(quantity_ned)) throw new ValidationError('Invalid quantity_ned');
+  return quantity_ned;
+}
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function validateLogin(body) {

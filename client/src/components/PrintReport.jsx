@@ -64,6 +64,7 @@ export default function PrintReport({ filters, summary, user, onClose }) {
               <th>Item</th>
               <th>Type</th>
               <th>Qty</th>
+              <th>Qty (NED)</th>
               <th>Unit price</th>
               <th>Subtotal</th>
               <th>Flags</th>
@@ -79,6 +80,9 @@ export default function PrintReport({ filters, summary, user, onClose }) {
                 <td>{r.item_type}</td>
                 <td>
                   {r.quantity_lost ?? '—'} {r.unit !== '-' ? r.unit : ''}
+                </td>
+                <td>
+                  {r.quantity_ned ?? '—'} {r.unit !== '-' ? r.unit : ''}
                 </td>
                 <td>{formatMoney(r.unit_price)}</td>
                 <td>{formatMoney(r.subtotal)}</td>
