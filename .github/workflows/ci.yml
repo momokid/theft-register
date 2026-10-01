@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: theft_register_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Written fresh each run — CI has no access to the real .env.test (gitignored,
+      # and its DB password is local-only anyway). Also copied to .env so migrate.js
+      # and create-user.js (which load .env by default) pick up the same connection.
+      - name: Write CI env
+        run: |
+          cat > .env.test <<'EOF'
+          NODE_ENV=test
+          PORT=3001
+          APP_ORIGIN=http://localhost:5173
+          DB_HOST=127.0.0.1
+          DB_PORT=3306
+          DB_USER=root
+          DB_PASSWORD=root
+          DB_NAME=theft_register_test
+          JWT_SECRET=ci-only-secret-not-used-anywhere-else-000000
+          COOKIE_SECURE=false
+          EOF
+          cp .env.test .env
+
+      - name: Load schema and run migrations
+        run: |
+          mysql -h127.0.0.1 -uroot -proot theft_register_test < schema.sql
+          npm run migrate
+
+      - name: Create the test-admin fixture
+        run: printf 'TestPass123\n' | node scripts/create-user.js --name "Test Admin" --email test-admin@example.com --admin
+
+      # Only the test files that seed their own rows. thefts/prices/quantity/export
+      # assert against the real historical dataset (data.sql), which is gitignored
+      # as real business data and isn't available to CI — those are verified locally
+      # against the real seeded DB instead (see README).
+      - name: Run self-contained tests
+        run: node --test test/auth.test.js test/accounts.test.js test/audit.test.js test/import.test.js
+
+      - name: Build client
+        run: npm run build
+
+      - name: npm audit (informational)
+        run: npm audit --audit-level=high || true
