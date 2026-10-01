@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <path d="M32 4 56 14v16c0 16-10 26-24 30C18 56 8 46 8 30V14z" fill="#dc2626" stroke="#facc15" stroke-width="3"/>
-  <text x="32" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="13" fill="#facc15">RH</text>
-  <text x="32" y="44" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="9" fill="#facc15">Security</text>
+  <path d="M32 4 56 14v16c0 16-10 26-24 30C18 56 8 46 8 30V14z" fill="#facc15" stroke="#dc2626" stroke-width="3"/>
+  <text x="32" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="13" fill="#000000">RH</text>
+  <text x="32" y="44" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="9" fill="#000000">Security</text>
 </svg>
