@@ -365,15 +365,16 @@ main.main-wide {
 }
 .thefts-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
-  font-size: 0.9rem;
-  white-space: nowrap;
+  font-size: 0.85rem;
 }
 .thefts-table th,
 .thefts-table td {
-  padding: 0.5rem 0.75rem;
+  padding: 0.4rem 0.5rem;
   border: 2px solid var(--border);
   text-align: left;
+  overflow-wrap: break-word;
 }
 .thefts-table tr.flagged {
   background: var(--flagged-bg);
@@ -402,7 +403,8 @@ main.main-wide {
   flex-wrap: wrap;
 }
 .editable-cell input {
-  width: 90px;
+  width: 100%;
+  min-width: 0;
   padding: 0.3rem;
   border: 2px solid var(--border);
   border-radius: 4px;

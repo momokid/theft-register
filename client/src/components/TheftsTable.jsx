@@ -15,6 +15,19 @@ export default function TheftsTable({
   return (
     <div className="table-wrap">
       <table className="thefts-table">
+        <colgroup>
+          <col style={{ width: '8%' }} />
+          <col style={{ width: '6%' }} />
+          <col style={{ width: '13%' }} />
+          <col style={{ width: '13%' }} />
+          <col style={{ width: '9%' }} />
+          <col style={{ width: '9%' }} />
+          <col style={{ width: '9%' }} />
+          <col style={{ width: '10%' }} />
+          <col style={{ width: '9%' }} />
+          <col style={{ width: '9%' }} />
+          <col style={{ width: '5%' }} />
+        </colgroup>
         <thead>
           <tr>
             <th className="sortable" onClick={onToggleSort}>
