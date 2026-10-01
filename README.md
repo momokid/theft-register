@@ -81,6 +81,6 @@ GitHub Actions CI (`.github/workflows/ci.yml`) runs on every push/PR against a d
 
 ### Redeploying after changes
 
-If you uploaded via **cPanel Git Version Control**, edit `.cpanel.yml` at the repo root first — fill in your cPanel username, application root, and Node version in the three placeholders. From then on, every deploy is: push to GitHub, then in cPanel → *Git™ Version Control* → *Manage* → *Update from Remote*, then *Deploy HEAD Commit*. That runs `.cpanel.yml`'s tasks automatically — `npm install`, `npm run build`, `npm run migrate`, and a Passenger restart — no manual steps 1, 6, 7, or 8 needed.
+If you uploaded via **cPanel Git Version Control**, edit `.cpanel.yml` at the repo root first — fill in the application root and Node version in its two placeholders. From then on, every deploy is: push to GitHub, then in cPanel → *Git™ Version Control* → *Manage* → *Update from Remote*, then *Deploy HEAD Commit*. That runs `.cpanel.yml`'s tasks automatically — `npm install`, `npm run build`, `npm run migrate`, and a Passenger restart — no manual steps 1, 6, 7, or 8 needed.
 
 If you uploaded manually, repeat steps 1–2 (build, upload), then 6 (`npm install`, only if dependencies changed) and 7's `npm run migrate` (only if new migration files were added), then restart (step 8). Steps 3–5 are one-time setup either way.
