@@ -19,7 +19,7 @@ router.get('/', requireAuth, async (req, res, next) => {
     const { limit, offset } = parsePagination(req.query);
 
     const [rows] = await pool.query(
-      `SELECT ${LIST_COLUMNS} FROM thefts ${where} ORDER BY post_date DESC, id DESC LIMIT ? OFFSET ?`,
+      `SELECT ${LIST_COLUMNS} FROM thefts ${where} ORDER BY post_date ASC, id ASC LIMIT ? OFFSET ?`,
       [...params, limit, offset]
     );
     const [[{ total }]] = await pool.query(`SELECT COUNT(*) AS total FROM thefts ${where}`, params);

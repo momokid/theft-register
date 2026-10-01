@@ -17,7 +17,7 @@ router.get('/', requireAuth, async (req, res, next) => {
 
     const [rows] = await pool.query(
       `SELECT *, (quantity_ned * unit_price) AS subtotal FROM thefts ${where}
-       ORDER BY post_date DESC, id DESC LIMIT ${EXPORT_CAP}`,
+       ORDER BY post_date ASC, id ASC LIMIT ${EXPORT_CAP}`,
       params
     );
 
