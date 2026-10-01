@@ -34,6 +34,7 @@ const INSERT_COLUMNS = [
   'fuel_before_l',
   'fuel_after_l',
   'quantity_lost',
+  'quantity_ned',
   'posted_by',
   'source_time',
   'source_msg_ids',

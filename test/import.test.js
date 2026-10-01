@@ -29,6 +29,7 @@ const HEADERS = [
   'FUEL BEFORE (L)',
   'FUEL AFTER (L)',
   'QUANTITY LOST',
+  'QUANTITY (NED)',
   'UNIT COST (GHS)',
   'SUBTOTAL (GHS)',
   'POSTED BY',
@@ -215,6 +216,63 @@ test('quantity_lost is computed from fuel before/after when blank', async () => 
   const res = await uploadFile(base, '/api/import/preview', adminCookie, buffer);
   const body = await res.json();
   assert.equal(body.counts.new, 1);
+});
+
+test('an uncached formula in QUANTITY LOST falls back to fuel before/after, not an error', async () => {
+  // Some tools re-save workbooks without recalculating formulas, so the cell carries
+  // {formula: ...} with no cached result. Real-world files hit this on QUANTITY LOST
+  // cells like IF(AND(ISNUMBER(before),ISNUMBER(after)),before-after,"").
+  const buffer = await buildFixture({
+    rows: [
+      {
+        PROJECT: 'HTG',
+        DATE: new Date(Date.UTC(2026, 0, 18)),
+        'ITEM STOLEN': 'Fuel',
+        'ITEM TYPE': 'Fuel',
+        UNIT: 'L',
+        'FUEL BEFORE (L)': 500,
+        'FUEL AFTER (L)': 300,
+        'SOURCE MSG IDS': 'IMPORT-TEST-FORMULA-1',
+      },
+    ],
+  });
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+  const sheet = workbook.getWorksheet('All (for import)');
+  sheet.getRow(2).getCell(19).value = { formula: 'IF(AND(ISNUMBER(Q2),ISNUMBER(R2)),Q2-R2,"")' };
+  const patchedBuffer = Buffer.from(await workbook.xlsx.writeBuffer());
+
+  const res = await uploadFile(base, '/api/import/preview', adminCookie, patchedBuffer);
+  const body = await res.json();
+  assert.equal(body.counts.error, 0);
+  assert.equal(body.counts.new, 1);
+  assert.equal(body.rows[0].status, 'new');
+});
+
+test('quantity_ned is parsed and persisted independently of quantity_lost', async () => {
+  const buffer = await buildFixture({
+    rows: [
+      {
+        PROJECT: 'HTG',
+        DATE: new Date(Date.UTC(2026, 0, 17)),
+        'ITEM STOLEN': 'Fuel',
+        'ITEM TYPE': 'Fuel',
+        UNIT: 'L',
+        'QUANTITY LOST': 100,
+        'QUANTITY (NED)': 85.5,
+        'SOURCE MSG IDS': 'IMPORT-TEST-NED-1',
+      },
+    ],
+  });
+
+  const commitRes = await uploadFile(base, '/api/import/commit', adminCookie, buffer);
+  assert.equal(commitRes.status, 200);
+
+  const [[row]] = await pool.query(
+    `SELECT quantity_lost, quantity_ned FROM thefts WHERE source_msg_ids = 'IMPORT-TEST-NED-1'`
+  );
+  assert.equal(Number(row.quantity_lost), 100);
+  assert.equal(Number(row.quantity_ned), 85.5);
 });
 
 test('commit inserts only new rows and is idempotent on re-import', async () => {

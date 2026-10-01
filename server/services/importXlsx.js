@@ -25,6 +25,7 @@ const HEADER_MAP = {
   'FUEL BEFORE (L)': 'fuel_before_l',
   'FUEL AFTER (L)': 'fuel_after_l',
   'QUANTITY LOST': 'quantity_lost',
+  'QUANTITY (NED)': 'quantity_ned',
   'POSTED BY': 'posted_by',
   'SOURCE (CHAT MSG)': 'source_time',
   'SOURCE MSG IDS': 'source_msg_ids',
@@ -44,6 +45,7 @@ const NUMERIC_FIELDS = [
   'probe_after_l',
   'fuel_before_l',
   'fuel_after_l',
+  'quantity_ned',
 ];
 
 const REQUIRED_STRING_FIELDS = [
@@ -63,8 +65,11 @@ const OPTIONAL_STRING_FIELDS = [
 ];
 
 // Formula cells expose {formula, result} — read the cached result. Rich text and
-// hyperlink cells expose their text under other keys. Never trims: raw_post must
-// stay verbatim, other fields are trimmed individually in validateRow.
+// hyperlink cells expose their text under other keys. A formula saved without a
+// cached result (some tools re-save workbooks without recalculating) has neither
+// 'result' nor a readable text form — treat it as blank rather than a bad value,
+// since there's no way to evaluate the formula ourselves. Never trims: raw_post
+// must stay verbatim, other fields are trimmed individually in validateRow.
 function cellPlainValue(cell) {
   let v = cell.value;
   if (v === null || v === undefined) return null;
@@ -73,6 +78,7 @@ function cellPlainValue(cell) {
     if ('result' in v) v = v.result;
     else if ('richText' in v) v = v.richText.map((t) => t.text).join('');
     else if ('text' in v) v = v.text;
+    else if ('formula' in v || 'sharedFormula' in v) return null;
   }
   if (v === null || v === undefined || v === '') return null;
   return v;
