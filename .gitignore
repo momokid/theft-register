@@ -9,3 +9,4 @@ data*.sql
 .claude/
 *.md
 !README.md
+tmp/
