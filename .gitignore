@@ -7,3 +7,5 @@ data*.sql
 *.xlsx
 *.xls
 .claude/
+*.md
+!README.md
