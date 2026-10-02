@@ -73,3 +73,107 @@ jobs:
 
       - name: npm audit (informational)
         run: npm audit --audit-level=high || true
+
+  deploy:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      APP_DIR: liability-overview.rhsecurityltd.com
+      NODE_VERSION_DIR: '18'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      # Staging folder holds exactly what the server needs; .env is built from secrets here
+      # and never committed.
+      - name: Stage release
+        env:
+          APP_ORIGIN: ${{ secrets.APP_ORIGIN }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          mkdir -p release/client
+          cp -r app.js package.json package-lock.json schema.sql migrations scripts server release/
+          cp -r client/dist release/client/dist
+          {
+            echo "NODE_ENV=production"
+            echo "APP_ORIGIN=$APP_ORIGIN"
+            echo "DB_HOST=$DB_HOST"
+            echo "DB_PORT=$DB_PORT"
+            echo "DB_NAME=$DB_NAME"
+            echo "DB_USER=$DB_USER"
+            echo "DB_PASSWORD=$DB_PASSWORD"
+            echo "JWT_SECRET=$JWT_SECRET"
+            echo "COOKIE_SECURE=true"
+          } > release/.env
+          chmod 600 release/.env
+
+      - name: Set up SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$DEPLOY_PORT" "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      # node_modules, tmp and .htaccess are managed on the server (CloudLinux keeps
+      # node_modules as a symlink), so rsync must never touch them.
+      - name: Upload
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          rsync -az --delete \
+            --exclude=node_modules --exclude=tmp --exclude=.htaccess --exclude=stderr.log \
+            -e "ssh -i ~/.ssh/deploy_key -p $DEPLOY_PORT" \
+            release/ "$DEPLOY_USER@$DEPLOY_HOST:$APP_DIR/"
+
+      - name: Install, migrate, restart
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "APP_DIR=$APP_DIR NODE_VERSION_DIR=$NODE_VERSION_DIR bash -s" <<'REMOTE'
+          set -euo pipefail
+          VENV="$HOME/nodevenv/$APP_DIR/$NODE_VERSION_DIR"
+          cd "$HOME/$APP_DIR"
+          [ -e node_modules ] || ln -s "$VENV/lib/node_modules" node_modules
+          source "$VENV/bin/activate"
+          npm install --omit=dev
+          npm run migrate
+          if [ ! -f .htaccess ]; then
+            cat > .htaccess <<HT
+          # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+          PassengerAppRoot "$HOME/$APP_DIR"
+          PassengerBaseURI "/"
+          PassengerNodejs "$VENV/bin/node"
+          PassengerAppType node
+          PassengerStartupFile app.js
+          # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+          <Files ".env">
+            Require all denied
+          </Files>
+          HT
+          fi
+          mkdir -p tmp
+          touch tmp/restart.txt
+          REMOTE
