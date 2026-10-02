@@ -154,7 +154,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
             "APP_DIR=$APP_DIR NODE_VERSION_DIR=$NODE_VERSION_DIR bash -s" <<'REMOTE'
-          set -euo pipefail
+          set -eo pipefail
           VENV="$HOME/nodevenv/$APP_DIR/$NODE_VERSION_DIR"
           cd "$HOME/$APP_DIR"
           [ -e node_modules ] || ln -s "$VENV/lib/node_modules" node_modules
