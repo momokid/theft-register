@@ -6,6 +6,14 @@ import { requireOnlyKeys, parsePagination, ValidationError } from '../validate.j
 
 export const router = Router();
 
+// mysql2 returns a JSON column as a string on some server versions (MariaDB < 10.5,
+// confirmed locally) and as an already-decoded object on others (CI's mariadb:10.11) —
+// never assume one or the other.
+function parseJsonColumn(v) {
+  if (v === null || v === undefined) return null;
+  return typeof v === 'string' ? JSON.parse(v) : v;
+}
+
 router.get('/', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     requireOnlyKeys(req.query, [...AUDIT_FILTER_KEYS, 'page', 'pageSize']);
@@ -21,11 +29,10 @@ router.get('/', requireAuth, requireAdmin, async (req, res, next) => {
     );
     const [[{ total }]] = await pool.query(`SELECT COUNT(*) AS total FROM audit_log a ${where}`, params);
 
-    // MariaDB's JSON columns come back as plain strings, not parsed objects.
     for (const row of rows) {
-      row.old_value = row.old_value ? JSON.parse(row.old_value) : null;
-      row.new_value = row.new_value ? JSON.parse(row.new_value) : null;
-      row.meta = row.meta ? JSON.parse(row.meta) : null;
+      row.old_value = parseJsonColumn(row.old_value);
+      row.new_value = parseJsonColumn(row.new_value);
+      row.meta = parseJsonColumn(row.meta);
     }
 
     res.json({ rows, total });

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { config } from 'dotenv';
 import ExcelJS from 'exceljs';
 import bcrypt from 'bcryptjs';
+import { parseJsonColumn } from './helpers.js';
 config({ path: new URL('../.env.test', import.meta.url) });
 const { app } = await import('../server/index.js');
 const { pool } = await import('../server/db.js');
@@ -154,7 +155,12 @@ test('rejects a sheet missing required headers', async () => {
 });
 
 test('preview classifies new, duplicate, and error rows, and stops at the totals block', async () => {
-  const [[existing]] = await pool.query(`SELECT project, source_msg_ids, item_stolen FROM thefts LIMIT 1`);
+  const existing = { project: 'HTG', item_stolen: 'Fuel', source_msg_ids: 'IMPORT-TEST-0' };
+  await pool.query(
+    `INSERT INTO thefts (project, post_date, item_stolen, item_type, unit, source_msg_ids)
+     VALUES (?, '2026-01-15', ?, 'Fuel', 'L', ?)`,
+    [existing.project, existing.item_stolen, existing.source_msg_ids]
+  );
 
   const buffer = await buildFixture({
     includeTotalsBlock: true,
@@ -302,7 +308,7 @@ test('commit inserts only new rows and is idempotent on re-import', async () => 
   assert.equal(row.quantity_override, 0);
 
   const [[auditRow]] = await pool.query(`SELECT meta FROM audit_log WHERE action = 'import' ORDER BY id DESC LIMIT 1`);
-  const meta = JSON.parse(auditRow.meta);
+  const meta = parseJsonColumn(auditRow.meta);
   assert.equal(meta.inserted, 1);
 
   const second = await uploadFile(base, '/api/import/commit', adminCookie, buffer);

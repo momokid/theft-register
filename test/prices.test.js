@@ -1,6 +1,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { config } from 'dotenv';
+import { parseJsonColumn } from './helpers.js';
 config({ path: new URL('../.env.test', import.meta.url) });
 const { app } = await import('../server/index.js');
 const { pool } = await import('../server/db.js');
@@ -62,7 +63,7 @@ test('PATCH sets an override price', async () => {
     [String(id)]
   );
   assert.equal(auditRow.action, 'price_override');
-  assert.equal(JSON.parse(auditRow.new_value).unit_price, 12.5);
+  assert.equal(parseJsonColumn(auditRow.new_value).unit_price, 12.5);
 });
 
 test('PATCH with null clears the override', async () => {
@@ -155,7 +156,7 @@ test('acceptance check: apply, override, re-apply skips the overridden row', asy
   const [[applyAudit]] = await pool.query(
     `SELECT old_value FROM audit_log WHERE action = 'price_apply' ORDER BY id DESC LIMIT 1`
   );
-  const oldValues = JSON.parse(applyAudit.old_value);
+  const oldValues = parseJsonColumn(applyAudit.old_value);
   assert.equal(oldValues.length, 6);
   assert.ok(oldValues.every((r) => Number(r.unit_price) === 10));
   assert.ok(!oldValues.some((r) => r.id === id));

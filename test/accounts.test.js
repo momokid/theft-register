@@ -2,6 +2,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { config } from 'dotenv';
 import bcrypt from 'bcryptjs';
+import { parseJsonColumn } from './helpers.js';
 config({ path: new URL('../.env.test', import.meta.url) });
 const { app } = await import('../server/index.js');
 const { pool } = await import('../server/db.js');
@@ -94,7 +95,7 @@ test('POST /api/accounts creates a user and audits user_create with no password'
     `SELECT new_value FROM audit_log WHERE action = 'user_create' AND entity_id = ? ORDER BY id DESC LIMIT 1`,
     [String(body.id)]
   );
-  const newValue = JSON.parse(auditRow.new_value);
+  const newValue = parseJsonColumn(auditRow.new_value);
   assert.equal(newValue.email, 'accounts-test-1@example.com');
   assert.equal('password' in newValue, false);
   assert.equal('password_hash' in newValue, false);
@@ -141,8 +142,8 @@ test('PATCH /api/accounts/:id updates only the changed fields and audits them', 
     `SELECT old_value, new_value FROM audit_log WHERE action = 'user_update' AND entity_id = ? ORDER BY id DESC LIMIT 1`,
     [String(id)]
   );
-  const oldValue = JSON.parse(auditRow.old_value);
-  const newValue = JSON.parse(auditRow.new_value);
+  const oldValue = parseJsonColumn(auditRow.old_value);
+  const newValue = parseJsonColumn(auditRow.new_value);
   assert.deepEqual(Object.keys(newValue), ['name']);
   assert.equal(oldValue.name, 'Accounts Test One');
   assert.equal(newValue.name, 'Renamed');

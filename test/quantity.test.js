@@ -2,6 +2,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { config } from 'dotenv';
 import bcrypt from 'bcryptjs';
+import { parseJsonColumn } from './helpers.js';
 config({ path: new URL('../.env.test', import.meta.url) });
 const { app } = await import('../server/index.js');
 const { pool } = await import('../server/db.js');
@@ -97,7 +98,7 @@ test('PATCH corrects the quantity and marks it overridden', async () => {
     [String(targetId)]
   );
   assert.equal(auditRow.action, 'quantity_override');
-  assert.equal(Number(JSON.parse(auditRow.new_value).quantity_lost), newQty);
+  assert.equal(Number(parseJsonColumn(auditRow.new_value).quantity_lost), newQty);
 });
 
 test('PATCH rejects invalid quantities', async () => {
@@ -164,7 +165,7 @@ test('PATCH corrects quantity_ned and marks it overridden, independently of quan
     [String(targetId)]
   );
   assert.equal(auditRow.action, 'quantity_ned_override');
-  assert.equal(Number(JSON.parse(auditRow.new_value).quantity_ned), 42);
+  assert.equal(Number(parseJsonColumn(auditRow.new_value).quantity_ned), 42);
 });
 
 test('PATCH /quantity_ned rejects invalid quantities', async () => {

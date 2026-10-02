@@ -2,6 +2,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { config } from 'dotenv';
 import ExcelJS from 'exceljs';
+import { parseJsonColumn } from './helpers.js';
 config({ path: new URL('../.env.test', import.meta.url) });
 const { app } = await import('../server/index.js');
 const { pool } = await import('../server/db.js');
@@ -79,6 +80,6 @@ test('export is capped at 5000 rows and audited', async () => {
   const [[auditRow]] = await pool.query(
     `SELECT meta FROM audit_log WHERE action = 'export' ORDER BY id DESC LIMIT 1`
   );
-  const meta = JSON.parse(auditRow.meta);
+  const meta = parseJsonColumn(auditRow.meta);
   assert.ok(meta.row_count <= 5000);
 });
