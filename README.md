@@ -44,7 +44,7 @@ GitHub Actions CI (`.github/workflows/ci.yml`) runs on every push/PR against a d
    - Node version: 18 or later.
    - Application root: the directory you uploaded to (e.g. `theft-register`).
    - Application URL: your domain or subdomain.
-   - Application startup file: `app.js`.
+   - Application startup file: `app.cjs` (Passenger loads it with `require()`, which cannot load the ES-module `app.js` directly; `app.cjs` imports it).
    This step generates the Passenger config (`.htaccess` and the app's `passenger_appenv` wiring) for you — you don't create it by hand.
 
 4. **Set environment variables.** In the same Node.js App screen, add each variable from `.env.example`:

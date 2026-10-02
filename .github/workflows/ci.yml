@@ -106,7 +106,7 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
           mkdir -p release/client
-          cp -r app.js package.json package-lock.json schema.sql migrations scripts server release/
+          cp -r app.js app.cjs package.json package-lock.json schema.sql migrations scripts server release/
           cp -r client/dist release/client/dist
           {
             echo "NODE_ENV=production"
@@ -168,13 +168,14 @@ jobs:
           PassengerBaseURI "/"
           PassengerNodejs "$VENV/bin/node"
           PassengerAppType node
-          PassengerStartupFile app.js
+          PassengerStartupFile app.cjs
           # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
           <Files ".env">
             Require all denied
           </Files>
           HT
           fi
+          sed -i 's/^PassengerStartupFile .*/PassengerStartupFile app.cjs/' .htaccess
           mkdir -p tmp
           touch tmp/restart.txt
           REMOTE
