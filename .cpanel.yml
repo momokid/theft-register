@@ -1,20 +1,19 @@
 ---
-# cPanel Git Version Control deploy script. Runs entirely on the cPanel server
-# when a deploy is triggered there — it has no access to GitHub or its secrets.
+# cPanel Git Version Control deploy script. Runs on the cPanel server when
+# "Deploy HEAD Commit" is clicked; it has no access to GitHub or its secrets.
 #
-# Application root: liability-overview.rhsecurityltd.com (must match both the
-# Node.js App's "Application root" and the Git repository's "Repository Path"
-# in cPanel — they need to point at the same directory, so these tasks run
-# directly against the live app, no separate copy step).
-# Node version: 18.20.8 (cPanel's recommended version on this platform).
+# Two folders on purpose, so the git checkout never gets dirty (cPanel greys
+# out Deploy when it does):
+#   repo (git clone):  ~/repositories/theft-register
+#   app  (Node.js App "Application root"): ~/liability-overview.rhsecurityltd.com
 #
-# $HOME is set by cPanel's own shell to the account's home directory, so the
-# username itself never needs to be written here.
-#
-# cPanel runs these commands in order via /bin/bash -c, stopping on the first failure.
+# Node version 18.20.8 (cPanel's recommended version on this platform).
+# $HOME is set by cPanel's shell, so the username is never written here.
 deployment:
   tasks:
     - export DEPLOYPATH=$HOME/liability-overview.rhsecurityltd.com/
+    - mkdir -p $DEPLOYPATH
+    - /bin/rsync -a --delete --exclude=.git --exclude=node_modules --exclude=client/dist --exclude=tmp --exclude=.htaccess --exclude=stderr.log --exclude=.env $HOME/repositories/theft-register/ $DEPLOYPATH
     - source $HOME/nodevenv/liability-overview.rhsecurityltd.com/18.20.8/bin/activate
     - cd $DEPLOYPATH && npm install --include=dev
     - cd $DEPLOYPATH && npm run build
