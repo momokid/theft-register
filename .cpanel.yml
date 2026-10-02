@@ -16,7 +16,7 @@ deployment:
   tasks:
     - export DEPLOYPATH=$HOME/liability-overview.rhsecurityltd.com/
     - source $HOME/nodevenv/liability-overview.rhsecurityltd.com/18.20.8/bin/activate
-    - cd $DEPLOYPATH && npm install
+    - cd $DEPLOYPATH && npm install --include=dev
     - cd $DEPLOYPATH && npm run build
     - cd $DEPLOYPATH && npm run migrate
     - deactivate
